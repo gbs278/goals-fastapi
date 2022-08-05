@@ -1,6 +1,7 @@
 import os
 from Models.UserModels import UserModel, UpdateUserModel
 from Models.GoalModels import GoalModel, UpdateGoalModel
+from Models.StepModels import StepModel, UpdateStepModel
 from dotenv import load_dotenv
 from fastapi import FastAPI, Body, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -17,7 +18,7 @@ app = FastAPI()
 client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
 users = client.users
 goals = client.goals
-
+steps = client.steps
 
 ### START OF USER ROUTES ###
 @app.post("/api/create-user", response_description="Add new user", response_model=UserModel)
@@ -112,7 +113,7 @@ async def show_goal(id: str):
 
 
 @app.get( "/api/get-goals/{user_id}", response_description="Get a single user's goals", )
-async def show_goals(id: str):
+async def show_goals_by_user(id: str):
     if (user := await users["users"].find_one({"_id": id})) is not None:
         total_goals = []
         for(goal_id) in user["goals"]:
@@ -127,9 +128,7 @@ async def show_goals(id: str):
 async def update_goal(goal_id: str, goal: UpdateGoalModel = Body(...)):
     
     goal = {k: v for k, v in goal.dict().items() if v is not None}
-    print(type(goal["end_date"]))
     goal["end_date"] = datetime.datetime.combine(goal["end_date"], datetime.time())
-    print(goal["end_date"])
     if len(goal) >= 1:
         update_result = await goals["goals"].update_one({"_id": goal_id}, {"$set": goal})
         if update_result.modified_count == 1:
@@ -151,11 +150,101 @@ async def delete_goal(id: str):
     found_user = await users["users"].find_one({"_id": user_id})
     user_goals = found_user["goals"]
     user_goals.remove(id)
+
+
     
     delete_result = await goals["goals"].delete_one({"_id": id})
     deleted_goal_from_user = await users["users"].update_one({"_id": user_id}, {"$set": {"goals" : user_goals}})
+    deleted_steps = await steps["steps"].delete_many({"goal_id": id})
     if delete_result.deleted_count == 1:
         return {"Message": "Goal deleted"}
 
     raise HTTPException(status_code=404, detail=f"Goal {id} not found")
 ### END OF GOAL ROUTES ###
+
+
+### START OF STEP ROUTES ### 
+@app.post("/api/create-step/{goal_id}", response_description="Add new step towards goals", response_model=StepModel) 
+async def create_step(goal_id: str, step: StepModel = Body(...)):
+    if (goal := await goals["goals"].find_one({"_id": goal_id})) is None:
+        raise HTTPException(status_code=404, detail=f"Goal {goal_id} not found")
+   
+    
+    step = jsonable_encoder(step)
+    new_step = await steps["steps"].insert_one(step)
+    created_steps = await steps["steps"].find_one({"_id": new_step.inserted_id})
+    
+    if new_step.inserted_id is not None:
+         associated_goal =  await goals["goals"].update_one({"_id": goal_id}, {"$push": {'steps': new_step.inserted_id}})
+
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_steps)
+
+
+@app.get(
+    "/api/get-all-steps", response_description="List all steps", response_model=List[StepModel]
+)
+async def list_steps():
+    all_steps = await steps["steps"].find().to_list(1000)
+    return all_steps
+
+@app.get(
+    "/api/get-step-by-step-id/{step_id}", response_description="Get a single step by Steps's ID", response_model=StepModel
+)
+async def show_step(id: str):
+    if (step := await steps["steps"].find_one({"_id": id})) is not None:
+        return step
+
+    raise HTTPException(status_code=404, detail=f"Step {id} not found")
+
+
+@app.get( "/api/get-steps/{goal_id}", response_description="Get a single goals's steps", )
+async def show_steps_by_goal(id: str):
+    if (goal := await goals["goals"].find_one({"_id": id})) is not None:
+        total_steps = []
+        for(step_id) in goal["steps"]:
+            if (step := await steps["steps"].find_one({"_id": step_id})) is not None:
+                total_steps.append(step)
+        return total_steps
+
+    raise HTTPException(status_code=404, detail=f"Goal {id} not found")
+
+
+@app.put("/api/update-step/{step_id}", response_description="Update a Step by its ID", response_model=StepModel)
+async def update_step(step_id: str, step: UpdateStepModel = Body(...)):
+    
+    step = {k: v for k, v in step.dict().items() if v is not None}
+    if len(step) >= 1:
+        update_result = await steps["steps"].update_one({"_id": step_id}, {"$set": step})
+        if update_result.modified_count == 1:
+            if (
+                updated_step := await steps["steps"].find_one({"_id": step_id})
+            ) is not None:
+                return updated_step
+
+    if (existing_step := await steps["steps"].find_one({"_id": step_id})) is not None:
+        return existing_step
+
+    raise HTTPException(status_code=404, detail=f"Step {step_id} not found")
+
+
+@app.delete("/api/delete-step/{step_id}", response_description="Delete a step by Step ID")
+async def delete_step(id: str):
+    found_step = await steps["steps"].find_one({"_id": id})
+    if found_step is None:
+        raise HTTPException(status_code=404, detail=f"Step {id} not found")
+    goal_id = found_step["goal_id"]
+    found_goal = await goals["goals"].find_one({"_id": goal_id})
+    goal_steps = found_goal["steps"]
+    
+    goal_steps.remove(id)
+
+
+    
+    delete_result = await steps["steps"].delete_one({"_id": id})
+    deleted_goal_from_user = await goals["goals"].update_one({"_id": goal_id}, {"$set": {"steps" : goal_steps}})
+    if delete_result.deleted_count == 1:
+        return {"Message": "Step deleted"}
+
+    raise HTTPException(status_code=404, detail=f"Step {id} not found")
+
+### END OF STEP ROUTES ###
