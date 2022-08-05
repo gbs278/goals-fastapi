@@ -1,5 +1,6 @@
 import os
 from Models.PyObjectId import PyObjectId
+from .GoalModels import GoalModel, UpdateGoalModel
 from dotenv import load_dotenv
 from fastapi import FastAPI, Body, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -12,42 +13,33 @@ import motor.motor_asyncio
 load_dotenv()
 
 
-class GoalModel(BaseModel):
+class StepModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     description: str = Field(...)
-    start_date: date=  date.today()
-    end_date: date = Field(...)
-    completed: bool = False
-    user: PyObjectId = Field(default_factory=PyObjectId, alias="user_id")
-    steps: List[PyObjectId] = Field(default_factory=list, alias="steps")
-    # @TO-DO need to add in all the to dos, do this after the to dos model has been created
+    goal_id: PyObjectId = Field(default_factory=PyObjectId, alias="goal_id")
+    # @TO-DO need to add in all the steps, do this after the steps model has been created
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "description": "Learn Guitar",
-                "user_id" : "1234456789",
-                "end_date": "2020-01-31"
+                "description": "Take Guitar Lesson",
+                "goal_id" : "1234456789"
 
             }
         }
 
 
-class UpdateGoalModel(BaseModel):
-    end_date: Optional[date] = Field(default_factory=date, alias="end_date")
+class UpdateStepModel(BaseModel):
     description: Optional[str]
-    completed: Optional[bool]
-    user_id : Optional[PyObjectId]
+    goal_id : Optional[PyObjectId]
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "end_date": "2020-01-31",
-                "description": """Learn Guitar""",
-                "completed": True,
-                "user_id" : "1234456789"
+                "description": "Take Guitar Lesson",
+                "goal_id" : "1234456789"
             }
         }
