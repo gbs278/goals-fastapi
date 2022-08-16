@@ -16,7 +16,7 @@ function Register() {
           alert("Sucessfully Registered");
         })
         .catch((error) => {
-          alert(error);
+          alert("User Already Exists. Please Try Again");
         });
     };
     useEffect(() => {
