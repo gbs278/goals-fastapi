@@ -17,7 +17,6 @@ class StepModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     description: str = Field(...)
     goal_id: PyObjectId = Field(default_factory=PyObjectId, alias="goal_id")
-    # @TO-DO need to add in all the steps, do this after the steps model has been created
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
