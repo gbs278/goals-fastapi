@@ -62,6 +62,8 @@ async def login(request:OAuth2PasswordRequestForm = Depends()):
 ### START OF USER ROUTES ###
 @app.post("/api/create-user", response_description="Add new user" ) # response_model=UserModel
 async def create_user(request: UserModel):
+    if(user := users["users"].find_one({"name":request.name})):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
     hashed_pass = Hash.bcrypt(request.password)
     user_object = dict(request)
     user_object["password"] = hashed_pass
