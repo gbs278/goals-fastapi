@@ -1,36 +1,34 @@
-import React, {useState, useEffect} from 'react'
-import axios from 'axios'
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 function Register() {
-    const [name, setName] = useState("");
-    const [password, setPassword] = useState("");
-    const [auth, setAuth] = useState()
-    const handleSubmit = (evt) => {
-      evt.preventDefault();
-      const data = {
-        name: name,
-        password: password,
-      };
-      axios
-        .post("http://localhost:8000/api/create-user", data)
-        .then((response) => {
-          alert("Sucessfully Registered");
-        })
-        .catch((error) => {
-          alert("User Already Exists. Please Try Again");
-        });
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [auth, setAuth] = useState();
+  const handleSubmit = (evt) => {
+    evt.preventDefault();
+    const data = {
+      name: name,
+      password: password,
     };
-    useEffect(() => {
-      if(localStorage.getItem("isAuth")){
-        setAuth(true)
-      }
-      else{
-        setAuth(false)
-      }
+    axios
+      .post("http://localhost:8000/api/create-user", data)
+      .then((response) => {
+        alert("Sucessfully Registered");
+      })
+      .catch((error) => {
+        alert("User Already Exists. Please Try Again");
+      });
+  };
+  useEffect(() => {
+    if (localStorage.getItem("isAuth")) {
+      setAuth(true);
+    } else {
+      setAuth(false);
     }
-    , [auth])
-    return (
-      <>
-        {!auth ? 
+  }, [auth]);
+  return (
+    <>
+      {!auth ? (
         <form
           style={{
             marginTop: "100px",
@@ -65,8 +63,10 @@ function Register() {
             <input type="submit" value="Submit" />
           </div>
         </form>
-        : <></>}
-      </>
-    );
-  } export default Register
-  
+      ) : (
+        <></>
+      )}
+    </>
+  );
+}
+export default Register;

@@ -29,7 +29,7 @@ class UserModel(BaseModel):
 
 class UpdateUserModel(BaseModel):
     name: Optional[str]
-    course: Optional[str]
+    password: Optional[str]
 
     class Config:
         arbitrary_types_allowed = True

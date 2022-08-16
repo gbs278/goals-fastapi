@@ -60,15 +60,19 @@ async def login(request:OAuth2PasswordRequestForm = Depends()):
 
 ### END OF PASSWORD HASHING STUFF ###
 ### START OF USER ROUTES ###
-@app.post("/api/create-user", response_description="Add new user" ) # response_model=UserModel
+@app.post("/api/create-user/{id}", response_description="Add new user" , response_model=UserModel) # 
 async def create_user(request: UserModel):
-    if(user := users["users"].find_one({"name":request.name})):
+    print(request)
+    print(type(await users["users"].find_one({"name":request.name})), "length of user")
+    if(user :=  await users["users"].find_one({"name":request.name})):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
     hashed_pass = Hash.bcrypt(request.password)
     user_object = dict(request)
     user_object["password"] = hashed_pass
-    user_id = users["users"].insert_one(user_object)
-    return {"res":"created"}
+    user_to_return = await users["users"].insert_one(user_object)
+    # return user as UserModel
+    #user_to_return = await users["users"].find_one({"_id":user_id}) 
+    return user_object
     
     
    
@@ -93,17 +97,18 @@ async def show_user(id: str):
 @app.put("/api/update-user/{id}", response_description="Update a user", response_model=UserModel)
 async def update_user(id: str, user: UpdateUserModel = Body(...)):
     user = {k: v for k, v in user.dict().items() if v is not None}
-
+    hashed_pass = Hash.bcrypt(user["password"])
+    user = dict(user)
+    user["password"] = hashed_pass
     if len(user) >= 1:
-        update_result = await users["users"].update_one({"_id": id}, {"$set": user})
-
+        update_result = await users["users"].update_one({"_id": ObjectId(id)}, {"$set": user})
         if update_result.modified_count == 1:
             if (
-                updated_user := await users["users"].find_one({"_id": id})
+                updated_user := await users["users"].find_one({"_id": ObjectId(id)})
             ) is not None:
                 return updated_user
 
-    if (existing_user := await users["users"].find_one({"_id": id})) is not None:
+    if (existing_user := await users["users"].find_one({"_id": ObjectId(id)})) is not None:
         return existing_user
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")
