@@ -3,7 +3,7 @@ from Models.UserModels import UserModel, UpdateUserModel
 from Models.GoalModels import GoalModel, UpdateGoalModel
 from Models.StepModels import StepModel, UpdateStepModel
 from dotenv import load_dotenv
-from fastapi import FastAPI, Body, HTTPException, status
+from fastapi import FastAPI, Body, HTTPException, status, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, EmailStr
@@ -13,17 +13,60 @@ import datetime
 from typing import Optional, List
 import motor.motor_asyncio
 load_dotenv()
-
+# imports for passwords
+from passlib.context import CryptContext
+from Models.LoginModel import Login
+from oauth import get_current_user
+from jwttoken import create_access_token
+from hashing import Hash
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
+# end imports for password
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
+# end import for password
+from fastapi import APIRouter
 app = FastAPI()
+# more login stuff 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# end more login stuff
 client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
 users = client.users
 goals = client.goals
 steps = client.steps
 
+### START OF PASSWORD HASHING STUFF ###
+
+@app.post('/login')
+async def login(request:OAuth2PasswordRequestForm = Depends()):
+    #return request
+    user = await users["users"].find_one({"name":request.username})
+    #return jsonable_encoder(user)
+    if not user:
+       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    
+    if not Hash.verify(user["password"],request.password):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    access_token = create_access_token(data={"sub": user["name"] })
+    return {"access_token": access_token, "token_type": "bearer"}
+
+### END OF PASSWORD HASHING STUFF ###
 ### START OF USER ROUTES ###
 @app.post("/api/create-user", response_description="Add new user", response_model=UserModel)
 async def create_user(user: UserModel = Body(...)):
-    user = jsonable_encoder(user)
+    hashedPassword = Hash.bcrypt(user.password)
+    updated_user = UserModel(name=user.name, password=hashedPassword)
+    
+    user = jsonable_encoder(updated_user)
     new_user = await users["users"].insert_one(user)
     created_users = await users["users"].find_one({"_id": new_user.inserted_id})
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_users)
