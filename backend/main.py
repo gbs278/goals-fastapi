@@ -3,7 +3,7 @@ from Models.UserModels import UserModel, UpdateUserModel
 from Models.GoalModels import GoalModel, UpdateGoalModel
 from Models.StepModels import StepModel, UpdateStepModel
 from dotenv import load_dotenv
-from fastapi import FastAPI, Body, HTTPException, status
+from fastapi import FastAPI, Body, HTTPException, status, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, EmailStr
@@ -13,21 +13,63 @@ import datetime
 from typing import Optional, List
 import motor.motor_asyncio
 load_dotenv()
-
+# imports for passwords
+from passlib.context import CryptContext
+from Models.LoginModel import Login
+from oauth import get_current_user
+from jwttoken import create_access_token
+from hashing import Hash
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordRequestForm
+# end imports for password
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+]
+# end import for password
+from fastapi import APIRouter
 app = FastAPI()
+# more login stuff 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# end more login stuff
 client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
 users = client.users
 goals = client.goals
 steps = client.steps
 
-### START OF USER ROUTES ###
-@app.post("/api/create-user", response_description="Add new user", response_model=UserModel)
-async def create_user(user: UserModel = Body(...)):
-    user = jsonable_encoder(user)
-    new_user = await users["users"].insert_one(user)
-    created_users = await users["users"].find_one({"_id": new_user.inserted_id})
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_users)
+### START OF PASSWORD HASHING STUFF ###
 
+@app.post('/login')
+async def login(request:OAuth2PasswordRequestForm = Depends()):
+    #return request
+    user = await users["users"].find_one({"name":request.username})
+    #return jsonable_encoder(user)
+    if not user:
+       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    if not Hash.verify(user["password"],request.password):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    access_token = create_access_token(data={"sub": user["name"] })
+    return {"access_token": str(user["_id"]), "token_type": "bearer"}
+
+### END OF PASSWORD HASHING STUFF ###
+### START OF USER ROUTES ###
+@app.post("/api/create-user", response_description="Add new user" ) # response_model=UserModel
+async def create_user(request: UserModel):
+    hashed_pass = Hash.bcrypt(request.password)
+    user_object = dict(request)
+    user_object["password"] = hashed_pass
+    user_id = users["users"].insert_one(user_object)
+    return {"res":"created"}
+    
+    
+   
 
 @app.get(
     "/api/get-all-users", response_description="List all users", response_model=List[UserModel]
@@ -41,9 +83,8 @@ async def list_users():
     "/api/get-user/{id}", response_description="Get a single user", response_model=UserModel
 )
 async def show_user(id: str):
-    if (user := await users["users"].find_one({"_id": id})) is not None:
+    if (user := await users["users"].find_one({"_id": ObjectId(id)})) is not None:
         return user
-
     raise HTTPException(status_code=404, detail=f"User {id} not found")
 
 
@@ -80,7 +121,7 @@ async def delete_user(id: str):
 ### START OF GOAL ROUTES ###
 @app.post("/api/create-goal/{id}", response_description="Add new goal", response_model=GoalModel) 
 async def create_goal(user_id: str, goal: GoalModel = Body(...)):
-    if (user := await users["users"].find_one({"_id": user_id})) is None:
+    if (user := await users["users"].find_one({"_id": ObjectId(user_id)})) is None:
         raise HTTPException(status_code=404, detail=f"User {user_id} not found")
    
     
@@ -89,7 +130,7 @@ async def create_goal(user_id: str, goal: GoalModel = Body(...)):
     created_goals = await goals["goals"].find_one({"_id": new_goal.inserted_id})
     
     if new_goal.inserted_id is not None:
-         associated_user =  await users["users"].update_one({"_id": user_id}, {"$push": {'goals': new_goal.inserted_id}})
+         associated_user =  await users["users"].update_one({"_id": ObjectId(user_id)}, {"$push": {'goals': new_goal.inserted_id}})
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_goals)
 
@@ -112,9 +153,9 @@ async def show_goal(id: str):
     raise HTTPException(status_code=404, detail=f"Goal {id} not found")
 
 
-@app.get( "/api/get-goals/{user_id}", response_description="Get a single user's goals", )
+@app.get( "/api/get-goals", response_description="Get a single user's goals", )
 async def show_goals_by_user(id: str):
-    if (user := await users["users"].find_one({"_id": id})) is not None:
+    if (user := await users["users"].find_one({"_id": ObjectId(id)})) is not None:
         total_goals = []
         for(goal_id) in user["goals"]:
             if (goal := await goals["goals"].find_one({"_id": goal_id})) is not None:
