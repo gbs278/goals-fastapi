@@ -53,24 +53,25 @@ async def login(request:OAuth2PasswordRequestForm = Depends()):
     #return jsonable_encoder(user)
     if not user:
        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    
     if not Hash.verify(user["password"],request.password):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     access_token = create_access_token(data={"sub": user["name"] })
-    return {"access_token": access_token, "token_type": "bearer"}
+    print(type(access_token))
+    return {"access_token": str(user["_id"]), "token_type": "bearer"}
 
 ### END OF PASSWORD HASHING STUFF ###
 ### START OF USER ROUTES ###
-@app.post("/api/create-user", response_description="Add new user", response_model=UserModel)
-async def create_user(user: UserModel = Body(...)):
-    hashedPassword = Hash.bcrypt(user.password)
-    updated_user = UserModel(name=user.name, password=hashedPassword)
+@app.post("/api/create-user", response_description="Add new user" ) # response_model=UserModel
+async def create_user(request: UserModel):
+    hashed_pass = Hash.bcrypt(request.password)
+    user_object = dict(request)
+    user_object["password"] = hashed_pass
+    user_id = users["users"].insert_one(user_object)
+	# print(user)
+    return {"res":"created"}
     
-    user = jsonable_encoder(updated_user)
-    new_user = await users["users"].insert_one(user)
-    created_users = await users["users"].find_one({"_id": new_user.inserted_id})
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_users)
-
+    
+   
 
 @app.get(
     "/api/get-all-users", response_description="List all users", response_model=List[UserModel]
@@ -84,9 +85,8 @@ async def list_users():
     "/api/get-user/{id}", response_description="Get a single user", response_model=UserModel
 )
 async def show_user(id: str):
-    if (user := await users["users"].find_one({"_id": id})) is not None:
+    if (user := await users["users"].find_one({"_id": ObjectId(id)})) is not None:
         return user
-
     raise HTTPException(status_code=404, detail=f"User {id} not found")
 
 
@@ -123,7 +123,7 @@ async def delete_user(id: str):
 ### START OF GOAL ROUTES ###
 @app.post("/api/create-goal/{id}", response_description="Add new goal", response_model=GoalModel) 
 async def create_goal(user_id: str, goal: GoalModel = Body(...)):
-    if (user := await users["users"].find_one({"_id": user_id})) is None:
+    if (user := await users["users"].find_one({"_id": ObjectId(user_id)})) is None:
         raise HTTPException(status_code=404, detail=f"User {user_id} not found")
    
     
@@ -132,7 +132,7 @@ async def create_goal(user_id: str, goal: GoalModel = Body(...)):
     created_goals = await goals["goals"].find_one({"_id": new_goal.inserted_id})
     
     if new_goal.inserted_id is not None:
-         associated_user =  await users["users"].update_one({"_id": user_id}, {"$push": {'goals': new_goal.inserted_id}})
+         associated_user =  await users["users"].update_one({"_id": ObjectId(user_id)}, {"$push": {'goals': new_goal.inserted_id}})
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_goals)
 
@@ -155,13 +155,18 @@ async def show_goal(id: str):
     raise HTTPException(status_code=404, detail=f"Goal {id} not found")
 
 
-@app.get( "/api/get-goals/{user_id}", response_description="Get a single user's goals", )
+@app.get( "/api/get-goals", response_description="Get a single user's goals", )
 async def show_goals_by_user(id: str):
-    if (user := await users["users"].find_one({"_id": id})) is not None:
+    print('gal user id ' , id )
+    if (user := await users["users"].find_one({"_id": ObjectId(id)})) is not None:
+        print("user found" , user)
         total_goals = []
         for(goal_id) in user["goals"]:
+            print("goal_id" , goal_id)
             if (goal := await goals["goals"].find_one({"_id": goal_id})) is not None:
+                print("current goal" , goal)
                 total_goals.append(goal)
+        print('gal total goals ' , total_goals)
         return total_goals
 
     raise HTTPException(status_code=404, detail=f"User {id} not found")

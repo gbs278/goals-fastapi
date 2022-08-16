@@ -12,7 +12,6 @@ load_dotenv()
 from .GoalModels import GoalModel, UpdateGoalModel
 
 class UserModel(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     name: str = Field(...)
     password: str = Field(...)
     goals: List[PyObjectId] = Field(default_factory=list, alias="goals")

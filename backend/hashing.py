@@ -4,4 +4,5 @@ class Hash():
    def bcrypt(password:str):
       return pwd_cxt.hash(password)
    def verify(hashed,normal):
-      return pwd_cxt.verify(normal,hashed)
+    print("gal in verify hashed" , hashed , " normal " , normal)
+    return pwd_cxt.verify(normal,hashed)
