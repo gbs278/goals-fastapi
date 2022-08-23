@@ -128,10 +128,11 @@ async def delete_user(id: str):
 ### START OF GOAL ROUTES ###
 @app.post("/api/create-goal/{id}", response_description="Add new goal", response_model=GoalModel) 
 async def create_goal(user_id: str, goal: GoalModel = Body(...)):
+    print(user_id)
     if (user := await users["users"].find_one({"_id": ObjectId(user_id)})) is None:
         raise HTTPException(status_code=404, detail=f"User {user_id} not found")
-   
-    
+    goal = jsonable_encoder(goal)
+    goal["end_date"] = datetime.datetime.strptime(goal["end_date"] , "%Y-%m-%d")
     goal = jsonable_encoder(goal)
     new_goal = await goals["goals"].insert_one(goal)
     created_goals = await goals["goals"].find_one({"_id": new_goal.inserted_id})
@@ -140,7 +141,6 @@ async def create_goal(user_id: str, goal: GoalModel = Body(...)):
          associated_user =  await users["users"].update_one({"_id": ObjectId(user_id)}, {"$push": {'goals': new_goal.inserted_id}})
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=created_goals)
-
 
 @app.get(
     "/api/get-all-goals", response_description="List all goals", response_model=List[GoalModel]
@@ -195,14 +195,15 @@ async def update_goal(goal_id: str, goal: UpdateGoalModel = Body(...)):
 async def delete_goal(id: str):
     found_goal = await goals["goals"].find_one({"_id": id})
     user_id = found_goal["user_id"]
-    found_user = await users["users"].find_one({"_id": user_id})
-    user_goals = found_user["goals"]
-    user_goals.remove(id)
-
-
     
+    found_user = await users["users"].find_one({"_id": ObjectId(user_id)})
+    user_goals = found_user["goals"]
+    print("before" , user_goals)
+    user_goals.remove(id)
+    print("after" , user_goals)
+
     delete_result = await goals["goals"].delete_one({"_id": id})
-    deleted_goal_from_user = await users["users"].update_one({"_id": user_id}, {"$set": {"goals" : user_goals}})
+    deleted_goal_from_user = await users["users"].update_one({"_id": ObjectId(user_id)}, {"$set": {"goals" : user_goals}})
     deleted_steps = await steps["steps"].delete_many({"goal_id": id})
     if delete_result.deleted_count == 1:
         return {"Message": "Goal deleted"}

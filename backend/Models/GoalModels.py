@@ -16,7 +16,7 @@ class GoalModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     description: str = Field(...)
     start_date: date=  date.today()
-    end_date: date = Field(...)
+    end_date: str = Field(...) #date = Field(...)
     completed: bool = False
     user: PyObjectId = Field(default_factory=PyObjectId, alias="user_id")
     steps: List[PyObjectId] = Field(default_factory=list, alias="steps")

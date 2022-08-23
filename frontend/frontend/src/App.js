@@ -68,8 +68,10 @@ function OnlyHome() {
       <Navbar bg="primary" variant="dark">
         <Container>
           <Navbar.Brand href="/">Home</Navbar.Brand>
-          <Nav.Link href="/goals">Goals</Nav.Link>
-          <Nav.Link href="/profile">Profile</Nav.Link>
+          <Nav className="me-auto">
+            <Nav.Link href="/goals">Goals</Nav.Link>
+            <Nav.Link href="/profile">Profile</Nav.Link>
+          </Nav>
         </Container>
       </Navbar>
     </>

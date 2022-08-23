@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import Table from "react-bootstrap/Table";
+import AddGoalModal from "./AddGoalModal";
 function Goals({ currentUserID, setCurrentUserID }) {
   const [goals, setGoals] = useState();
   const [userId, setUserId] = useState("");
@@ -25,26 +27,51 @@ function Goals({ currentUserID, setCurrentUserID }) {
       });
     return res;
   };
-
+  function handleRowClick(x, item) {
+    console.log("clicked this row", item);
+  }
+  const headerTitleStyle = {
+    textAlign: "center",
+    alignSelf: "center",
+  };
   useEffect(() => {
     if (localStorage.getItem("userId") && currentUserID.length === 0) {
       setCurrentUserID(localStorage.getItem("userId"));
     }
     setUserId(currentUserID);
     const currentGoals = getGoals();
-  }, [userId, localStorage.getItem("userId")]);
+  }, []);
   return (
-    <div>
-      <h1>Goals {currentUserID}</h1>
-      {goals ? (
-        goals.map((goal, index) => {
-          return (
+    <div style={headerTitleStyle}>
+      <h1>Goals</h1>
+      <AddGoalModal />
+      {goals && goals.length > 0 ? (
+        <Table striped>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>End Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {goals.map((item, i) => {
+              return [
+                <tr key={i} onClick={(x) => handleRowClick(x, item)}>
+                  <td>{item.description}</td>
+                  <td>{new Date(item.end_date).toDateString()}</td>
+                </tr>,
+              ];
+            })}
+            {/* goals.map((goal, index) => {
+            return (
             <div key={index}>
               <h2>{goal.end_date}</h2>
               <h3>{goal.description}</h3>
             </div>
           );
-        })
+        }) */}
+          </tbody>
+        </Table>
       ) : (
         <h1>No goals</h1>
       )}
