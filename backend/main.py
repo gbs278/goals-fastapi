@@ -190,6 +190,29 @@ async def update_goal(goal_id: str, goal: UpdateGoalModel = Body(...)):
 
     raise HTTPException(status_code=404, detail=f"Goal {goal_id} not found")
 
+@app.put("/api/increment-completed-steps/{goal_id}" , response_description="Increment the amount of steps completed by a goal")
+async def increment_completed_steps(goal_id: str):
+    found_goal = await goals["goals"].find_one({"_id": goal_id})
+    steps_done = found_goal["completed_steps"]
+    steps_done+=1
+    print("done w steps " , steps_done)
+    update_result = await goals["goals"].update_one({"_id": goal_id}, {"$set": {"completed_steps" : steps_done}})
+    if (existing_goal := await goals["goals"].find_one({"_id": goal_id})) is not None:
+        return existing_goal
+
+    raise HTTPException(status_code=404, detail=f"Goal {goal_id} not found")
+
+@app.put("/api/decrement-completed-steps/{goal_id}" , response_description="Decrement the amount of steps completed by a goal")
+async def dcrement_completed_steps(goal_id: str):
+    if (existing_goal := await goals["goals"].find_one({"_id": goal_id})) is None:
+        raise HTTPException(status_code=404, detail=f"Goal {goal_id} not found")
+    found_goal = await goals["goals"].find_one({"_id": goal_id})
+    steps_done = found_goal["completed_steps"]
+    steps_done = steps_done-1
+    update_result = await goals["goals"].update_one({"_id": goal_id}, {"$set": {"completed_steps" : steps_done}})
+    return update_result
+    
+
 
 @app.delete("/api/delete-goal/{goal_id}", response_description="Delete a goal by Goal ID")
 async def delete_goal(id: str):
