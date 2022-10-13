@@ -35,6 +35,7 @@ function AddGoalModal({ currentUserID }) {
     };
     console.log(data);
     let res = await axios
+
       .post(
         `http://localhost:8000/api/create-goal/{id}?user_id=${userId}`,
         data,
@@ -85,6 +86,7 @@ function AddGoalModal({ currentUserID }) {
               <input type="text" name="description" onChange={handleChange} />
             </label>
           </form>
+          Complete By:{" "}
           <Button onClick={openCalendar}>{date.toDateString()}</Button>
         </Modal.Body>
         <Modal.Footer>

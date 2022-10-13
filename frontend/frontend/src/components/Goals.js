@@ -2,9 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Table from "react-bootstrap/Table";
 import AddGoalModal from "./AddGoalModal";
+import StepsModal from "./StepsModal";
+import GoalProgressBar from "./GoalProgressBar";
 function Goals({ currentUserID, setCurrentUserID }) {
   const [goals, setGoals] = useState();
   const [userId, setUserId] = useState("");
+  const [showSteps, setShowSteps] = useState(false);
+  const [goalId, setGoalId] = useState();
+  const [goalDescription, setGoalDescription] = useState();
 
   // axios get to get goals
   const getGoals = async () => {
@@ -28,7 +33,10 @@ function Goals({ currentUserID, setCurrentUserID }) {
     return res;
   };
   function handleRowClick(x, item) {
-    console.log("clicked this row", item);
+    console.log("clicked ", item.description);
+    setGoalDescription(item.description);
+    setShowSteps(true);
+    setGoalId(item._id);
   }
   const headerTitleStyle = {
     textAlign: "center",
@@ -51,6 +59,7 @@ function Goals({ currentUserID, setCurrentUserID }) {
             <tr>
               <th>Description</th>
               <th>End Date</th>
+              <th>Progress</th>
             </tr>
           </thead>
           <tbody>
@@ -59,22 +68,23 @@ function Goals({ currentUserID, setCurrentUserID }) {
                 <tr key={i} onClick={(x) => handleRowClick(x, item)}>
                   <td>{item.description}</td>
                   <td>{new Date(item.end_date).toDateString()}</td>
+                  <td>
+                    <GoalProgressBar goal={item} />
+                  </td>
                 </tr>,
               ];
             })}
-            {/* goals.map((goal, index) => {
-            return (
-            <div key={index}>
-              <h2>{goal.end_date}</h2>
-              <h3>{goal.description}</h3>
-            </div>
-          );
-        }) */}
           </tbody>
         </Table>
       ) : (
         <h1>No goals</h1>
       )}
+      <StepsModal
+        goalDescription={goalDescription}
+        goalId={goalId}
+        show={showSteps}
+        setShow={setShowSteps}
+      />
     </div>
   );
 }

@@ -17,6 +17,7 @@ class StepModel(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     description: str = Field(...)
     goal_id: PyObjectId = Field(default_factory=PyObjectId, alias="goal_id")
+    completed: bool = False
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
@@ -33,12 +34,14 @@ class StepModel(BaseModel):
 class UpdateStepModel(BaseModel):
     description: Optional[str]
     goal_id : Optional[PyObjectId]
+    completed: bool = False
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
                 "description": "Take Guitar Lesson",
-                "goal_id" : "1234456789"
+                "goal_id" : "1234456789",
+                "completed": "true"
             }
         }

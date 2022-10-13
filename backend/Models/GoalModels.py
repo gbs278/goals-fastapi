@@ -20,7 +20,7 @@ class GoalModel(BaseModel):
     completed: bool = False
     user: PyObjectId = Field(default_factory=PyObjectId, alias="user_id")
     steps: List[PyObjectId] = Field(default_factory=list, alias="steps")
-    # @TO-DO need to add in all the to dos, do this after the to dos model has been created
+    completed_steps: int = 0
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
@@ -40,6 +40,7 @@ class UpdateGoalModel(BaseModel):
     description: Optional[str]
     completed: Optional[bool]
     user_id : Optional[PyObjectId]
+    completed_steps: Optional[int]
     class Config:
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
@@ -48,6 +49,7 @@ class UpdateGoalModel(BaseModel):
                 "end_date": "2020-01-31",
                 "description": """Learn Guitar""",
                 "completed": True,
-                "user_id" : "1234456789"
+                "user_id" : "1234456789",
+                "completed_steps": "5"
             }
         }
