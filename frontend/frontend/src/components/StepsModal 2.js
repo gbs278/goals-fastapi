@@ -4,14 +4,10 @@ import Modal from "react-bootstrap/Modal";
 import axios from "axios";
 import Table from "react-bootstrap/Table";
 import AddStepModal from "./AddStepModal";
-import CompleteStep from "./CompleteStep";
 function StepsModal({ goalDescription, goalId, show, setShow }) {
   const [fullscreen, setFullscreen] = useState(true);
   const [steps, setSteps] = useState();
 
-  function clicked(e, item) {
-    console.log("clicked button", item);
-  }
   async function getData() {
     console.log("in get data  ", goalId);
     let res = await axios
@@ -59,9 +55,7 @@ function StepsModal({ goalDescription, goalId, show, setShow }) {
                   return [
                     <tr key={i}>
                       <td>{item.description}</td>
-                      <td>
-                        {item.completed ? "Yes" : <CompleteStep step={item} />}
-                      </td>
+                      <td>{item.completed ? "Yes" : "No"}</td>
                     </tr>,
                   ];
                 })}

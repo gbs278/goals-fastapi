@@ -4,6 +4,7 @@ import Table from "react-bootstrap/Table";
 import AddGoalModal from "./AddGoalModal";
 import StepsModal from "./StepsModal";
 import GoalProgressBar from "./GoalProgressBar";
+import Button from "react-bootstrap/Button";
 function Goals({ currentUserID, setCurrentUserID }) {
   const [goals, setGoals] = useState();
   const [userId, setUserId] = useState("");
@@ -32,6 +33,28 @@ function Goals({ currentUserID, setCurrentUserID }) {
       });
     return res;
   };
+
+  function refreshPage() {
+    window.location.reload(false);
+  }
+
+  async function deleteGoal(goal) {
+    let res = axios
+      .delete(`http://localhost:8000/api/delete-goal/{goal_id}?id=${goal._id}`)
+      .then((response) => {
+        return response;
+      })
+      .catch((error) => {
+        return error;
+      });
+    return res;
+  }
+
+  function deleteAndRefresh(goal) {
+    deleteGoal(goal);
+    refreshPage();
+  }
+
   function handleRowClick(x, item) {
     console.log("clicked ", item.description);
     setGoalDescription(item.description);
@@ -60,6 +83,7 @@ function Goals({ currentUserID, setCurrentUserID }) {
               <th>Description</th>
               <th>End Date</th>
               <th>Progress</th>
+              <th>Delete goal?</th>
             </tr>
           </thead>
           <tbody>
@@ -70,6 +94,11 @@ function Goals({ currentUserID, setCurrentUserID }) {
                   <td>{new Date(item.end_date).toDateString()}</td>
                   <td>
                     <GoalProgressBar goal={item} />
+                  </td>
+                  <td>
+                    <button onClick={(e) => deleteAndRefresh(item)}>
+                      Delete
+                    </button>
                   </td>
                 </tr>,
               ];

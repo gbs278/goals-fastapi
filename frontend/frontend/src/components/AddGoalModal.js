@@ -55,7 +55,11 @@ function AddGoalModal({ currentUserID }) {
         return error;
       });
     handleClose();
+    refreshPage();
     return res;
+  }
+  function refreshPage() {
+    window.location.reload(false);
   }
   function openCalendar() {
     setShowCalendar(true);
