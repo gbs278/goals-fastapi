@@ -16,6 +16,9 @@ function AddStepModal({ goalDescription, goalId }) {
     addStep();
     handleClose();
   }
+  function refreshPage() {
+    window.location.reload(false);
+  }
   async function addStep() {
     // /api/create-step/{goal_id}"
     const data = {
@@ -37,6 +40,7 @@ function AddStepModal({ goalDescription, goalId }) {
       .catch((error) => {
         return error;
       });
+    refreshPage();
     return res;
   }
 

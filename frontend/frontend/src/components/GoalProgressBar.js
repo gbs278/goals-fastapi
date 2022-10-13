@@ -17,7 +17,11 @@ function GoalProgressBar({ goal }) {
   useEffect(() => {
     getNow();
   }, []);
-  return <ProgressBar now={now} label={`${now}%`} />;
+  return (
+    <>
+      {now === 0 ? "No Progress" : <ProgressBar now={now} label={`${now}%`} />}
+    </>
+  );
 }
 
 export default GoalProgressBar;
