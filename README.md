@@ -1,5 +1,3 @@
-Certainly! Here's a sample README for the "goals-fastapi" GitHub repository:
-
 # Goals-FastAPI
 
 
