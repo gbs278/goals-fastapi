@@ -2,9 +2,11 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
-#from main import TokenData
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
+from dotenv import load_dotenv
+import os
+load_dotenv()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 class TokenData(BaseModel):
