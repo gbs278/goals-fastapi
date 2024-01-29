@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { reloadPage } from "../utils";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,6 +15,7 @@ const Login = ({ setCurrentUserID }) => {
   const [password, setPassword] = useState("");
   const [auth, setAuth] = useState();
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState(null);
   const handleSubmit = async (evt) => {
     if (evt) {
       evt.preventDefault();
@@ -37,7 +39,8 @@ const Login = ({ setCurrentUserID }) => {
           return response;
         })
         .catch((error) => {
-          alert("Incorrect Username or password", error);
+          // alert("Incorrect Username or password", error);
+          setErrorMessage("Incorrect Username or password");
           setAuth(false);
         });
       return res;
@@ -45,8 +48,9 @@ const Login = ({ setCurrentUserID }) => {
     let x = await news();
     if (x) {
       navigate("/");
-      window.location.reload();
+      reloadPage();
       localStorage.setItem("isAuth", false);
+      setErrorMessage(null);
       setAuth(false);
     }
   };
@@ -70,20 +74,24 @@ const Login = ({ setCurrentUserID }) => {
           }}
           onSubmit={handleSubmit}
         >
+          {errorMessage && <div>{errorMessage}</div>}
           <div style={{ textAlign: "center" }}>Login</div>
           <br />
-          <label>Username:</label>
+          <label htmlFor="username">Username:</label>
           <input
             type="text"
+            id="username"
             className="username"
             value={name}
             onChange={(e) => setName(e.target.value)}
           ></input>
+
           <br />
           <br />
-          <label>Password: </label>
+          <label htmlFor="password">Password: </label>
           <input
             type="password"
+            id="password"
             className="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

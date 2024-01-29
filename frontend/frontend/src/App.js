@@ -17,11 +17,9 @@ import Navbar from "react-bootstrap/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Profile from "./components/Profile";
 import Goals from "./components/Goals";
-import NavDropdown from "react-bootstrap/NavDropdown";
 
 function App() {
   const [auth, setAuth] = useState(false);
-  const [token, setToken] = useState("");
   const [currentUserID, setCurrentUserID] = useState("");
 
   React.useEffect(() => {
@@ -34,7 +32,7 @@ function App() {
   }, [localStorage.getItem("isAuth"), auth, currentUserID]);
   return (
     <>
-      {!auth ? <AllLinks /> : <OnlyHome />}
+      {auth ? <AllLinks /> : <OnlyRegisterAndLogin />}
 
       <AppRoutes
         auth={auth}
@@ -46,7 +44,7 @@ function App() {
 }
 export default App;
 
-function AllLinks() {
+function OnlyRegisterAndLogin() {
   return (
     <>
       <Navbar bg="primary" variant="dark">
@@ -62,7 +60,7 @@ function AllLinks() {
   );
 }
 
-function OnlyHome() {
+function AllLinks() {
   return (
     <>
       <Navbar bg="primary" variant="dark">

@@ -60,10 +60,9 @@ async def login(request:OAuth2PasswordRequestForm = Depends()):
 
 ### END OF PASSWORD HASHING STUFF ###
 ### START OF USER ROUTES ###
-@app.post("/api/create-user/{id}", response_description="Add new user" , response_model=UserModel) # 
+@app.post("/api/create-user", response_description="Add new user" , response_model=UserModel) # 
 async def create_user(request: UserModel):
-    print(request)
-    print(type(await users["users"].find_one({"name":request.name})), "length of user")
+
     if(user :=  await users["users"].find_one({"name":request.name})):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
     hashed_pass = Hash.bcrypt(request.password)
@@ -322,4 +321,3 @@ async def delete_step(id: str):
     raise HTTPException(status_code=404, detail=f"Step {id} not found")
 
 ### END OF STEP ROUTES ###
-
