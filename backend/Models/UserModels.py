@@ -12,9 +12,15 @@ load_dotenv()
 from .GoalModels import GoalModel, UpdateGoalModel
 
 class UserModel(BaseModel):
+    # User's name
     name: str = Field(...)
+    
+    # User's password
     password: str = Field(...)
+    
+    # List of goal IDs associated with the user
     goals: List[PyObjectId] = Field(default_factory=list, alias="goals")
+
     class Config:
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
@@ -26,9 +32,11 @@ class UserModel(BaseModel):
             }
         }
 
-
 class UpdateUserModel(BaseModel):
+    # Optional new name for updating the user
     name: Optional[str]
+    
+    # Optional new password for updating the user
     password: Optional[str]
 
     class Config:

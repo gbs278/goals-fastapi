@@ -8,8 +8,10 @@ from Models.PyObjectId import PyObjectId
 from bson import ObjectId
 from typing import Optional, List
 import motor.motor_asyncio
+
 load_dotenv()
 
+# Define Login model for handling user login information
 class Login(BaseModel):
-    name: str = Field(...)
-    password: str = Field(...)
+    name: str = Field(...)  # User name for login
+    password: str = Field(...)  # User password for login
