@@ -1,7 +1,15 @@
 from passlib.context import CryptContext
-pwd_cxt = CryptContext(schemes =["bcrypt"],deprecated="auto")
-class Hash():
-   def bcrypt(password:str):
-      return pwd_cxt.hash(password)
-   def verify(hashed,normal):
-    return pwd_cxt.verify(normal,hashed)
+
+# Create an instance of CryptContext with the bcrypt hashing scheme
+pwd_cxt = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+class Hash:
+    @staticmethod
+    def bcrypt(password: str):
+        # Hash the password using bcrypt
+        return pwd_cxt.hash(password)
+
+    @staticmethod
+    def verify(hashed, normal):
+        # Verify the normal password against the hashed password
+        return pwd_cxt.verify(normal, hashed)
