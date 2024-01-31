@@ -17,6 +17,7 @@ import Navbar from "react-bootstrap/Navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Profile from "./components/Profile";
 import Goals from "./components/Goals";
+import "./App.css"; // Create a CSS file (e.g., App.css) for custom styles
 
 function App() {
   const [auth, setAuth] = useState(false);
@@ -47,10 +48,12 @@ export default App;
 function OnlyRegisterAndLogin() {
   return (
     <>
-      <Navbar bg="primary" variant="dark">
+      <Navbar bg="dark" variant="dark" expand="lg">
         <Container>
           <Navbar.Brand href="/">Home</Navbar.Brand>
-          <Nav className="me-auto">
+          <Nav className="ms-auto">
+            {" "}
+            {/* Move the Nav to the right using ms-auto */}
             <Nav.Link href="/register">Register</Nav.Link>
             <Nav.Link href="/login">Login</Nav.Link>
           </Nav>
@@ -63,10 +66,12 @@ function OnlyRegisterAndLogin() {
 function AllLinks() {
   return (
     <>
-      <Navbar bg="primary" variant="dark">
+      <Navbar bg="dark" variant="dark" expand="lg">
         <Container>
           <Navbar.Brand href="/">Home</Navbar.Brand>
-          <Nav className="me-auto">
+          <Nav className="mx-auto">
+            {" "}
+            {/* Center the Nav using mx-auto */}
             <Nav.Link href="/goals">Goals</Nav.Link>
             <Nav.Link href="/profile">Profile</Nav.Link>
           </Nav>

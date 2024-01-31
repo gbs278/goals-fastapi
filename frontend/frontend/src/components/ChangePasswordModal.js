@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import axios from "axios";
-function Example({ currentUserID }) {
+function ChangePasswordButton({ currentUserID }) {
   const [show, setShow] = useState(false);
   const [newPassword, setNewPassword] = useState();
   const [userId, setUserId] = useState();
@@ -72,4 +72,4 @@ function Example({ currentUserID }) {
   );
 }
 
-export default Example;
+export default ChangePasswordButton;

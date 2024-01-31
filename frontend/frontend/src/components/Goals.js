@@ -5,6 +5,7 @@ import AddGoalModal from "./AddGoalModal";
 import StepsModal from "./StepsModal";
 import GoalProgressBar from "./GoalProgressBar";
 import Button from "react-bootstrap/Button";
+import "../styles/overallStyle.css";
 function Goals({ currentUserID, setCurrentUserID }) {
   const [goals, setGoals] = useState();
   const [userId, setUserId] = useState("");
@@ -74,7 +75,7 @@ function Goals({ currentUserID, setCurrentUserID }) {
   }, []);
   return (
     <div style={headerTitleStyle}>
-      <h1>Goals</h1>
+      <h1 className="header">Your Goals</h1>
       <AddGoalModal />
       {goals && goals.length > 0 ? (
         <Table striped>
@@ -87,26 +88,26 @@ function Goals({ currentUserID, setCurrentUserID }) {
             </tr>
           </thead>
           <tbody>
-            {goals.map((item, i) => {
-              return [
-                <tr key={i} onClick={(x) => handleRowClick(x, item)}>
-                  <td>{item.description}</td>
-                  <td>{new Date(item.end_date).toDateString()}</td>
-                  <td>
-                    <GoalProgressBar goal={item} />
-                  </td>
-                  <td>
-                    <button onClick={(e) => deleteAndRefresh(item)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>,
-              ];
-            })}
+            {goals.map((item, i) => (
+              <tr key={i} onClick={(x) => handleRowClick(x, item)}>
+                <td style={{ color: "white" }}>{item.description}</td>
+                <td style={{ color: "white" }}>
+                  {new Date(item.end_date).toDateString()}
+                </td>
+                <td style={{ color: "white" }}>
+                  <GoalProgressBar goal={item} />
+                </td>
+                <td>
+                  <button onClick={(e) => deleteAndRefresh(item)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </Table>
       ) : (
-        <h1>No goals</h1>
+        <h1 className="header">Sorry, No Goals</h1>
       )}
       <StepsModal
         goalDescription={goalDescription}

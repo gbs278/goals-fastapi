@@ -1,38 +1,82 @@
-.App {
+/* App.css */
+
+body {
+  font-family: "Arial", sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  --bs-bg-opacity: 1;
+  background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navbar {
+  background-color: #000000e6; /* Set the background color of the navbar */
+
+  background-color: #000000e6; /* Set the background color of the Navbar */
+  border: 1px solid white; /* Set the border color to white */
+}
+
+.navbar-brand,
+.nav-link {
+  color: white !important; /* Set the font color of navbar elements to white */
+  font-weight: bold;
+}
+
+.navbar-brand:hover,
+.nav-link:hover {
+  color: #61dafb !important;
+}
+
+.content {
+  padding: 20px;
+}
+
+/* Add your specific styles for each component (Register, Login, Home, Goals, Profile) */
+
+/* Example for the home page */
+.home {
   text-align: center;
+  padding: 50px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Example for forms (Register and Login) */
+.form-container {
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.form-group {
+  margin-bottom: 20px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 
-.App-link {
-  color: #61dafb;
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.form-group button {
+  background-color: #61dafb;
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.form-group button:hover {
+  background-color: #4285f4;
 }
